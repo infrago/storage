@@ -7,18 +7,18 @@ import (
 	//
 )
 
-func (this *Module) Register(name string, value Any) {
-	switch config := value.(type) {
+func (this *Module) Register(o infra.Object) {
+	switch config := o.Object.(type) {
 	case Driver:
-		this.Driver(name, config)
+		this.Driver(o.Name, config)
 	case Config:
-		this.Config(name, config)
+		this.Config(o.Name, config)
 	case Configs:
 		this.Configs(config)
 	case Thumbnailer:
-		this.Thumbnailer(name, config)
+		this.Thumbnailer(o.Name, config)
 	case Previewer:
-		this.Previewer(name, config)
+		this.Previewer(o.Name, config)
 	}
 }
 
