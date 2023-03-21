@@ -1,2 +1,2 @@
 # store
-infra.go store module.
+infra.Go store module.
