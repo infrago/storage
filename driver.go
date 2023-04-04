@@ -25,7 +25,7 @@ type (
 
 		Upload(path string, metadata Map) (File, Files, error)
 		Download(file File) (string, error)
-		Browse(file File, query Map, expires time.Duration) (string, error)
 		Remove(file File) error
+		Browse(file File, query Map, expires time.Duration) (string, error)
 	}
 )
