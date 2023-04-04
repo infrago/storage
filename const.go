@@ -7,7 +7,7 @@ const (
 )
 
 var (
-	errInvalidStoreConnection = errors.New("Invalid store connection.")
-	errInvalidCode            = errors.New("Invalid code.")
-	errInvalidHandler         = errors.New("Invalid store handler.")
+	errInvalidConnection = errors.New("Invalid storage connection.")
+	errInvalidCode       = errors.New("Invalid code.")
+	errInvalidHandler    = errors.New("Invalid storage handler.")
 )

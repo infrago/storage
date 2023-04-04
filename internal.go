@@ -10,7 +10,7 @@ func (this *Module) UploadTo(base string, path string, metadata Map) (File, File
 	if inst, ok := this.instances[base]; ok {
 		return inst.connect.Upload(path, metadata)
 	}
-	return nil, nil, errInvalidStoreConnection
+	return nil, nil, errInvalidConnection
 }
 
 func (this *Module) Upload(path string, metadata Map) (File, Files, error) {
@@ -38,7 +38,7 @@ func (this *Module) Download(code string) (string, error) {
 		return file, nil
 
 	}
-	return "", errInvalidStoreConnection
+	return "", errInvalidConnection
 }
 
 func (this *Module) Remove(code string) error {
@@ -50,7 +50,7 @@ func (this *Module) Remove(code string) error {
 	if inst, ok := this.instances[info.Base()]; ok {
 		return inst.connect.Remove(info)
 	}
-	return errInvalidStoreConnection
+	return errInvalidConnection
 }
 
 func (this *Module) Browse(code string, query Map, expires ...time.Duration) (string, error) {
@@ -68,5 +68,5 @@ func (this *Module) Browse(code string, query Map, expires ...time.Duration) (st
 		return inst.connect.Browse(info, query, exp)
 	}
 
-	return "", errInvalidStoreConnection
+	return "", errInvalidConnection
 }

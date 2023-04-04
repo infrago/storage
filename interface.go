@@ -147,7 +147,7 @@ func (this *Module) Connect() {
 	for name, config := range this.configs {
 		driver, ok := this.drivers[config.Driver]
 		if ok == false {
-			panic("Invalid store driver: " + config.Driver)
+			panic("Invalid storage driver: " + config.Driver)
 		}
 
 		//实例
@@ -158,13 +158,13 @@ func (this *Module) Connect() {
 		// 建立连接
 		connect, err := driver.Connect(inst)
 		if err != nil {
-			panic("Failed to connect to file: " + err.Error())
+			panic("Failed to connect to storage: " + err.Error())
 		}
 
 		// 打开连接
 		err = connect.Open()
 		if err != nil {
-			panic("Failed to open file connect: " + err.Error())
+			panic("Failed to open storage connect: " + err.Error())
 		}
 
 		//记住连接
