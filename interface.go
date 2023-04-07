@@ -152,7 +152,7 @@ func (this *Module) Connect() {
 
 		//实例
 		inst := &Instance{
-			name, config, config.Setting, nil,
+			nil, name, config, config.Setting,
 		}
 
 		// 建立连接

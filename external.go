@@ -97,6 +97,6 @@ func Thumbnail(code string, width, height, pos int64) (string, error) {
 	return module.Thumbnail(code, width, height, pos)
 }
 
-func Preview(code string, width, height, second int64) (string, error) {
-	return module.Preview(code, width, height, second)
+func Preview(code string, width, height int64) (string, error) {
+	return module.Preview(code, width, height, 0)
 }

@@ -15,11 +15,11 @@ import (
 
 type (
 	Instance struct {
+		connect Connect
+
 		Name    string
 		Config  Config
 		Setting Map
-
-		connect Connect
 	}
 )
 
