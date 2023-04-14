@@ -92,7 +92,7 @@ func (this *Module) Configure(global Map) {
 	}
 
 	var config Map
-	if vvv, ok := global["store"].(Map); ok {
+	if vvv, ok := global["storage"].(Map); ok {
 		config = vvv
 	}
 	if config == nil {
@@ -190,7 +190,7 @@ func (this *Module) Launch() {
 		return
 	}
 
-	log.Println(fmt.Sprintf("%s STORE is running with %d connects.", infra.INFRAGO, len(this.instances)))
+	log.Println(fmt.Sprintf("%s STORAGE is running with %d connects.", infra.INFRAGO, len(this.instances)))
 
 	this.launched = true
 }
