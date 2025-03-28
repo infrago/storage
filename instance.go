@@ -33,11 +33,11 @@ type (
 // 	return ""
 // }
 
-func (this *Instance) File(root, key, tttt string, size int64) File {
+func (this *Instance) File(prefix, key, tttt string, size int64) File {
 	info := &filed{}
 
 	info.base = this.Name
-	info.root = root
+	info.prefix = prefix
 	info.key = key
 	info.tttt = tttt
 	info.size = size
@@ -51,7 +51,7 @@ func (this *Instance) File(root, key, tttt string, size int64) File {
 }
 
 // 统一返回本地缓存目录
-func (this *Instance) Download(file File) (string, error) {
+func (this *Instance) downloadTarget(file File) (string, error) {
 	name := file.Key()
 	if file.Type() != "" {
 		name = fmt.Sprintf("%s.%s", file.Key(), file.Type())
@@ -62,7 +62,7 @@ func (this *Instance) Download(file File) (string, error) {
 		base = ""
 	}
 
-	sfile := path.Join(module.config.Download, file.Base(), file.Root(), name)
+	sfile := path.Join(module.config.Download, file.Base(), file.Prefix(), name)
 	spath := path.Dir(sfile)
 
 	// //创建目录

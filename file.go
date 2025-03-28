@@ -16,11 +16,11 @@ import (
 
 type (
 	filed struct {
-		base string
-		root string
-		key  string
-		tttt string
-		size int64
+		base   string
+		prefix string
+		key    string
+		tttt   string
+		size   int64
 
 		code   string
 		proxy  bool
@@ -34,7 +34,7 @@ type (
 
 	File interface {
 		Base() string
-		Root() string
+		Prefix() string
 		Key() string
 		Type() string
 		Size() int64
@@ -52,8 +52,8 @@ type (
 func (sf *filed) Base() string {
 	return sf.base
 }
-func (sf *filed) Root() string {
-	return sf.root
+func (sf *filed) Prefix() string {
+	return sf.prefix
 }
 func (sf *filed) Key() string {
 	return sf.key
@@ -78,7 +78,7 @@ func (sf *filed) Remote() bool {
 }
 
 func (sf *filed) File() string {
-	return fmt.Sprintf("%s.%s", path.Join(sf.root, sf.key), sf.tttt)
+	return fmt.Sprintf("%s.%s", path.Join(sf.prefix, sf.key), sf.tttt)
 }
 func (sf *filed) Name() string {
 	return fmt.Sprintf("%s.%s", path.Base(sf.key), sf.tttt)
@@ -106,7 +106,7 @@ func encode(info *filed) string {
 	if base == infra.DEFAULT {
 		base = ""
 	}
-	code := fmt.Sprintf("%s\t%s\t%s\t%s\t%d", base, info.Root(), info.Key(), info.Type(), info.Size())
+	code := fmt.Sprintf("%s\t%s\t%s\t%s\t%d", base, info.Prefix(), info.Key(), info.Type(), info.Size())
 	if val, err := infra.EncryptTEXT(code); err == nil {
 		return val
 	}
@@ -127,7 +127,7 @@ func decode(code string) (*filed, error) {
 	info := &filed{}
 	info.code = code
 	info.base = args[0]
-	info.root = args[1]
+	info.prefix = args[1]
 	info.key = args[2]
 	info.tttt = args[3]
 	if vv, err := strconv.ParseInt(args[4], 10, 64); err == nil {

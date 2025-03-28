@@ -2,9 +2,6 @@ package storage
 
 import (
 	"io"
-	"time"
-
-	. "github.com/infrago/base"
 )
 
 type (
@@ -16,18 +13,6 @@ type (
 	// Health
 	Health struct {
 		Workload int64
-	}
-
-	Option struct {
-		Key      string
-		Root     string
-		Mimetype string
-		Metadata Map
-		Tags     Map
-		Expires  time.Time
-
-		//for browse
-		QueryString Map
 	}
 
 	Stream interface {
@@ -43,11 +28,11 @@ type (
 		Health() Health
 		Close() error
 
-		Upload(string, ...Option) (string, error)
-		Fetch(File, ...Option) (Stream, error)
-		Download(File, ...Option) (string, error)
+		Upload(string, UploadOption) (string, error)
+		Fetch(File, FetchOption) (Stream, error)
+		Download(File, DownloadOption) (string, error)
 
-		Remove(File) error
-		Browse(File, ...Option) (string, error)
+		Remove(File, RemoveOption) error
+		Browse(File, BrowseOption) (string, error)
 	}
 )

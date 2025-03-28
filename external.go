@@ -3,7 +3,6 @@ package storage
 import (
 	"errors"
 	"fmt"
-	"io"
 
 	. "github.com/infrago/base"
 )
@@ -18,7 +17,7 @@ func SaltConfig() string {
 	return module.config.Salt
 }
 
-func Upload(from Any, opts ...Option) (string, error) {
+func Upload(from Any, opts ...UploadOption) (string, error) {
 	path := ""
 	switch vv := from.(type) {
 	case string:
@@ -45,7 +44,7 @@ func Upload(from Any, opts ...Option) (string, error) {
 // 	return files, err
 // }
 
-func UploadTo(base string, from Any, opts ...Option) (string, error) {
+func UploadTo(base string, from Any, opts ...UploadOption) (string, error) {
 	path := ""
 	switch vv := from.(type) {
 	case string:
@@ -72,18 +71,18 @@ func UploadTo(base string, from Any, opts ...Option) (string, error) {
 // 	return files, err
 // }
 
-func Fetch(code string, opts ...Option) (io.Reader, error) {
-	return module.Fetch(code)
+func Fetch(code string, opts ...FetchOption) (Stream, error) {
+	return module.Fetch(code, opts...)
 }
 
-func Download(code string, opts ...Option) (string, error) {
-	return module.Download(code)
+func Download(code string, opts ...DownloadOption) (string, error) {
+	return module.Download(code, opts...)
 }
-func Remove(code string) error {
-	return module.Remove(code)
+func Remove(code string, opts ...RemoveOption) error {
+	return module.Remove(code, opts...)
 }
 
-func Browse(code string, opts ...Option) (string, error) {
+func Browse(code string, opts ...BrowseOption) (string, error) {
 	return module.Browse(code, opts...)
 }
 

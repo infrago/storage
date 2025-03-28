@@ -66,6 +66,10 @@ func (this *Module) configure(name string, config Map) {
 		cfg.Weight = int(weight)
 	}
 
+	if vv, ok := config["prefix"].(string); ok && vv != "" {
+		cfg.Prefix = vv
+	}
+
 	if vv, ok := config["proxy"].(bool); ok {
 		cfg.Proxy = vv
 	}

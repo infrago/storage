@@ -2,19 +2,54 @@ package storage
 
 import (
 	"errors"
-	"io"
 
+	"github.com/infrago/infra"
 	"github.com/infrago/util"
 )
 
-func (this *Module) UploadTo(base string, orginal string, opts ...Option) (string, error) {
-	if inst, ok := this.instances[base]; ok {
-		return inst.connect.Upload(orginal, opts...)
+func (this *Module) instance(code string) (*Instance, File, error) {
+	info, err := decode(code)
+	if err != nil {
+		return nil, nil, errInvalidCode
 	}
-	return "", errInvalidConnection
+
+	base := info.Base()
+	if base == "" {
+		base = infra.DEFAULT
+	}
+	if inst, ok := this.instances[base]; ok {
+		return inst, info, nil
+	}
+	return nil, nil, errInvalidConnection
 }
 
-func (this *Module) Upload(orginal string, opts ...Option) (string, error) {
+func (this *Module) UploadTo(base string, orginal string, opts ...UploadOption) (string, error) {
+	if base == "" {
+		base = infra.DEFAULT
+	}
+
+	inst, ok := this.instances[base]
+	if ok == false {
+		return "", errInvalidConnection
+	}
+
+	opt := UploadOption{}
+	if len(opts) > 0 {
+		opt = opts[0]
+	}
+
+	//默认全局的prefix
+	if inst.Config.Prefix != "" && opt.Prefix == "" {
+		opt.Prefix = inst.Config.Prefix
+	}
+	if opt.Mimetype == "" {
+		// opt.Mimetype = infra.Mimetype(util.Extension(orginal))
+	}
+
+	return inst.connect.Upload(orginal, opt)
+}
+
+func (this *Module) Upload(orginal string, opts ...UploadOption) (string, error) {
 	//这里自动分配一个存储
 	hash := util.Sha1BaseFile(orginal)
 	if hash == "" {
@@ -23,55 +58,66 @@ func (this *Module) Upload(orginal string, opts ...Option) (string, error) {
 	base := this.hashring.Locate(hash)
 	return this.UploadTo(base, orginal, opts...)
 }
-func (this *Module) Fetch(code string, opts ...Option) (io.Reader, error) {
-	info, err := decode(code)
-
+func (this *Module) Fetch(code string, opts ...FetchOption) (Stream, error) {
+	inst, file, err := this.instance(code)
 	if err != nil {
-		return nil, errInvalidCode
+		return nil, err
 	}
 
-	if inst, ok := this.instances[info.Base()]; ok {
-		return inst.connect.Fetch(info, opts...)
+	opt := FetchOption{}
+	if len(opts) > 0 {
+		opt = opts[0]
 	}
 
-	return nil, errInvalidConnection
+	return inst.connect.Fetch(file, opt)
 }
 
-func (this *Module) Download(code string, opts ...Option) (string, error) {
-	info, err := decode(code)
-
+func (this *Module) Download(code string, opts ...DownloadOption) (string, error) {
+	inst, file, err := this.instance(code)
 	if err != nil {
-		return "", errInvalidCode
+		return "", err
 	}
 
-	if inst, ok := this.instances[info.Base()]; ok {
-		return inst.connect.Download(info)
+	opt := DownloadOption{}
+	if len(opts) > 0 {
+		opt = opts[0]
 	}
 
-	return "", errInvalidConnection
+	if opt.Target == "" {
+		target, err := inst.downloadTarget(file)
+		if err != nil {
+			return "", err
+		}
+		opt.Target = target
+	}
+
+	return inst.connect.Download(file, opt)
 }
 
-func (this *Module) Remove(code string) error {
-	info, err := decode(code)
+func (this *Module) Remove(code string, opts ...RemoveOption) error {
+	inst, file, err := this.instance(code)
 	if err != nil {
-		return errInvalidCode
+		return err
 	}
 
-	if inst, ok := this.instances[info.Base()]; ok {
-		return inst.connect.Remove(info)
+	opt := RemoveOption{}
+	if len(opts) > 0 {
+		opt = opts[0]
 	}
-	return errInvalidConnection
+
+	return inst.connect.Remove(file, opt)
 }
 
-func (this *Module) Browse(code string, opts ...Option) (string, error) {
-	info, err := decode(code)
+func (this *Module) Browse(code string, opts ...BrowseOption) (string, error) {
+	inst, file, err := this.instance(code)
 	if err != nil {
-		return "", errInvalidCode
+		return "", err
 	}
 
-	if inst, ok := this.instances[info.Base()]; ok {
-		return inst.connect.Browse(info, opts...)
+	opt := BrowseOption{}
+	if len(opts) > 0 {
+		opt = opts[0]
 	}
 
-	return "", errInvalidConnection
+	return inst.connect.Browse(file, opt)
 }

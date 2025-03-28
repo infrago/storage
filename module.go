@@ -57,6 +57,7 @@ type (
 	Config  struct {
 		Driver  string
 		Weight  int
+		Prefix  string
 		Proxy   bool
 		Remote  bool
 		Setting Map
