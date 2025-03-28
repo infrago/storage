@@ -19,6 +19,7 @@ type (
 		Expires  time.Time
 	}
 	FetchOption struct {
+		//range支持
 		Start int64
 		End   int64
 	}
