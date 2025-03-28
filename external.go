@@ -3,7 +3,7 @@ package storage
 import (
 	"errors"
 	"fmt"
-	"time"
+	"io"
 
 	. "github.com/infrago/base"
 )
@@ -18,7 +18,7 @@ func SaltConfig() string {
 	return module.config.Salt
 }
 
-func Upload(from Any, metadatas ...Map) (File, Files, error) {
+func Upload(from Any, opts ...Option) (string, error) {
 	path := ""
 	switch vv := from.(type) {
 	case string:
@@ -27,30 +27,25 @@ func Upload(from Any, metadatas ...Map) (File, Files, error) {
 		if file, ok := vv["file"].(string); ok {
 			path = file
 		} else {
-			return nil, nil, errors.New("invalid target")
+			return "", errors.New("invalid target")
 		}
 	default:
 		path = fmt.Sprintf("%v", vv)
 	}
 
-	var metadata Map
-	if len(metadatas) > 0 {
-		metadata = metadatas[0]
-	}
-
-	return module.Upload(path, metadata)
+	return module.Upload(path, opts...)
 }
 
-func UploadFile(path Any, metadatas ...Map) (File, error) {
-	file, _, err := Upload(path, metadatas...)
-	return file, err
-}
-func UploadPath(path Any, metadatas ...Map) (Files, error) {
-	_, files, err := Upload(path, metadatas...)
-	return files, err
-}
+// func UploadFile(path Any, opts ...Option) (File, error) {
+// 	file, _, err := Upload(path, metadatas...)
+// 	return file, err
+// }
+// func UploadPath(path Any, metadatas ...Map) (Files, error) {
+// 	_, files, err := Upload(path, metadatas...)
+// 	return files, err
+// }
 
-func UploadTo(base string, from Any, metadatas ...Map) (File, Files, error) {
+func UploadTo(base string, from Any, opts ...Option) (string, error) {
 	path := ""
 	switch vv := from.(type) {
 	case string:
@@ -59,38 +54,37 @@ func UploadTo(base string, from Any, metadatas ...Map) (File, Files, error) {
 		if file, ok := vv["file"].(string); ok {
 			path = file
 		} else {
-			return nil, nil, errors.New("invalid target")
+			return "", errors.New("invalid target")
 		}
 	default:
 		path = fmt.Sprintf("%v", vv)
 	}
 
-	var metadata Map
-	if len(metadatas) > 0 {
-		metadata = metadatas[0]
-	}
-
-	return module.UploadTo(base, path, metadata)
+	return module.UploadTo(base, path, opts...)
 }
 
-func UploadFileTo(base string, path Any, metadatas ...Map) (File, error) {
-	file, _, err := UploadTo(base, path, metadatas...)
-	return file, err
-}
-func UploadPathTo(base string, path Any, metadatas ...Map) (Files, error) {
-	_, files, err := UploadTo(base, path, metadatas...)
-	return files, err
+// func UploadFileTo(base string, path Any, metadatas ...Map) (File, error) {
+// 	file, _, err := UploadTo(base, path, metadatas...)
+// 	return file, err
+// }
+// func UploadPathTo(base string, path Any, metadatas ...Map) (Files, error) {
+// 	_, files, err := UploadTo(base, path, metadatas...)
+// 	return files, err
+// }
+
+func Fetch(code string, opts ...Option) (io.Reader, error) {
+	return module.Fetch(code)
 }
 
-func Download(code string) (string, error) {
+func Download(code string, opts ...Option) (string, error) {
 	return module.Download(code)
 }
 func Remove(code string) error {
 	return module.Remove(code)
 }
 
-func Browse(code string, query Map, expires ...time.Duration) (string, error) {
-	return module.Browse(code, query, expires...)
+func Browse(code string, opts ...Option) (string, error) {
+	return module.Browse(code, opts...)
 }
 
 func Thumbnail(code string, width, height, pos int64) (string, error) {

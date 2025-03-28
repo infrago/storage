@@ -45,6 +45,7 @@ type (
 		hashring *util.HashRing
 	}
 
+	//这个是存储模块的全局配置
 	fileConfig struct {
 		Download  string
 		Thumbnail string

@@ -49,7 +49,7 @@ func (this *Module) Thumbnail(code string, width, height, position int64) (strin
 	return "", errInvalidHandler
 }
 
-// Preview 生成缩略图
+// Preview 生成预览图
 func (this *Module) Preview(code string, width, height, position int64) (string, error) {
 	file, err := decode(code)
 	if err != nil {

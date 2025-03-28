@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path"
 	"strconv"
 	"strings"
 
@@ -16,28 +17,32 @@ import (
 type (
 	filed struct {
 		base string
-		hash string
+		root string
+		key  string
 		tttt string
 		size int64
 
-		file string
-		name string
-		code string
-
+		code   string
 		proxy  bool
 		remote bool
+
+		// file string
+		// name string
+		// code string
+
 	}
 
 	File interface {
 		Base() string
-		Hash() string
+		Root() string
+		Key() string
 		Type() string
 		Size() int64
 
-		File() string
-		Name() string
-		Code() string
+		// File() string
+		// Name() string
 
+		Code() string
 		Proxy() bool
 		Remote() bool
 	}
@@ -47,8 +52,11 @@ type (
 func (sf *filed) Base() string {
 	return sf.base
 }
-func (sf *filed) Hash() string {
-	return sf.hash
+func (sf *filed) Root() string {
+	return sf.root
+}
+func (sf *filed) Key() string {
+	return sf.key
 }
 func (sf *filed) Type() string {
 	return sf.tttt
@@ -56,12 +64,7 @@ func (sf *filed) Type() string {
 func (sf *filed) Size() int64 {
 	return sf.size
 }
-func (sf *filed) File() string {
-	return sf.file
-}
-func (sf *filed) Name() string {
-	return sf.name
-}
+
 func (sf *filed) Code() string {
 	return sf.code
 }
@@ -72,6 +75,13 @@ func (sf *filed) Proxy() bool {
 
 func (sf *filed) Remote() bool {
 	return sf.remote
+}
+
+func (sf *filed) File() string {
+	return fmt.Sprintf("%s.%s", path.Join(sf.root, sf.key), sf.tttt)
+}
+func (sf *filed) Name() string {
+	return fmt.Sprintf("%s.%s", path.Base(sf.key), sf.tttt)
 }
 
 // func NewFile(base, hash, filepath string, size int64) File {
@@ -92,7 +102,11 @@ func (sf *filed) Remote() bool {
 // 文件编解码
 // fileConfig可以设置加解密方式
 func encode(info *filed) string {
-	code := fmt.Sprintf("%s\t%s\t%s\t%d", info.Base(), info.Hash(), info.Type(), info.Size())
+	base := info.Base()
+	if base == infra.DEFAULT {
+		base = ""
+	}
+	code := fmt.Sprintf("%s\t%s\t%s\t%s\t%d", base, info.Root(), info.Key(), info.Type(), info.Size())
 	if val, err := infra.EncryptTEXT(code); err == nil {
 		return val
 	}
@@ -106,16 +120,17 @@ func decode(code string) (*filed, error) {
 	}
 
 	args := strings.Split(fmt.Sprintf("%v", val), "\t")
-	if len(args) != 4 {
+	if len(args) != 5 {
 		return nil, errInvalidCode
 	}
 
 	info := &filed{}
 	info.code = code
 	info.base = args[0]
-	info.hash = args[1]
-	info.tttt = args[2]
-	if vv, err := strconv.ParseInt(args[3], 10, 64); err == nil {
+	info.root = args[1]
+	info.key = args[2]
+	info.tttt = args[3]
+	if vv, err := strconv.ParseInt(args[4], 10, 64); err == nil {
 		info.size = vv
 	}
 
@@ -134,7 +149,7 @@ func StatFile(file string) (Map, error) {
 		return nil, err
 	}
 
-	hash := util.Sha256BaseFile(file)
+	hash := util.Sha1BaseFile(file)
 	if hash == "" {
 		return nil, errors.New("hash error")
 	}
