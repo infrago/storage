@@ -33,8 +33,8 @@ type (
 // 	return ""
 // }
 
-func (this *Instance) File(prefix, key, tttt string, size int64) File {
-	info := &filed{}
+func (this *Instance) File(prefix, key, tttt string, size int64) *File {
+	info := &File{}
 
 	info.base = this.Name
 	info.prefix = prefix
@@ -51,7 +51,7 @@ func (this *Instance) File(prefix, key, tttt string, size int64) File {
 }
 
 // 统一返回本地缓存目录
-func (this *Instance) downloadTarget(file File) (string, error) {
+func (this *Instance) downloadTarget(file *File) (string, error) {
 	name := file.Key()
 	if file.Type() != "" {
 		name = fmt.Sprintf("%s.%s", file.Key(), file.Type())

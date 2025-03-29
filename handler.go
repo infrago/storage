@@ -15,7 +15,7 @@ type (
 		// Thumbnail 缩图
 		Action ThumbnailFunc
 	}
-	ThumbnailFunc func(File, int64, int64, int64) (string, error)
+	ThumbnailFunc func(*File, int64, int64, int64) (string, error)
 
 	Previewer struct {
 		// Name 名称
@@ -27,7 +27,7 @@ type (
 		// Preview 预览动图
 		Action PreviewerFunc
 	}
-	PreviewerFunc func(File, int64, int64, int64) (string, error)
+	PreviewerFunc func(*File, int64, int64, int64) (string, error)
 
 	Info struct {
 		Type string

@@ -15,7 +15,7 @@ import (
 )
 
 type (
-	filed struct {
+	File struct {
 		base   string
 		prefix string
 		key    string
@@ -32,55 +32,55 @@ type (
 
 	}
 
-	File interface {
-		Base() string
-		Prefix() string
-		Key() string
-		Type() string
-		Size() int64
+	// File interface {
+	// 	Base() string
+	// 	Prefix() string
+	// 	Key() string
+	// 	Type() string
+	// 	Size() int64
 
-		// File() string
-		// Name() string
+	// 	// File() string
+	// 	// Name() string
 
-		Code() string
-		Proxy() bool
-		Remote() bool
-	}
+	// 	Code() string
+	// 	Proxy() bool
+	// 	Remote() bool
+	// }
 	Files []File
 )
 
-func (sf *filed) Base() string {
+func (sf *File) Base() string {
 	return sf.base
 }
-func (sf *filed) Prefix() string {
+func (sf *File) Prefix() string {
 	return sf.prefix
 }
-func (sf *filed) Key() string {
+func (sf *File) Key() string {
 	return sf.key
 }
-func (sf *filed) Type() string {
+func (sf *File) Type() string {
 	return sf.tttt
 }
-func (sf *filed) Size() int64 {
+func (sf *File) Size() int64 {
 	return sf.size
 }
 
-func (sf *filed) Code() string {
+func (sf *File) Code() string {
 	return sf.code
 }
 
-func (sf *filed) Proxy() bool {
+func (sf *File) Proxy() bool {
 	return sf.proxy
 }
 
-func (sf *filed) Remote() bool {
+func (sf *File) Remote() bool {
 	return sf.remote
 }
 
-func (sf *filed) File() string {
+func (sf *File) File() string {
 	return fmt.Sprintf("%s.%s", path.Join(sf.prefix, sf.key), sf.tttt)
 }
-func (sf *filed) Name() string {
+func (sf *File) Name() string {
 	return fmt.Sprintf("%s.%s", path.Base(sf.key), sf.tttt)
 }
 
@@ -101,19 +101,19 @@ func (sf *filed) Name() string {
 
 // 文件编解码
 // fileConfig可以设置加解密方式
-func encode(info *filed) string {
-	base := info.Base()
+func encode(file *File) string {
+	base := file.Base()
 	if base == infra.DEFAULT {
 		base = ""
 	}
-	code := fmt.Sprintf("%s\t%s\t%s\t%s\t%d", base, info.Prefix(), info.Key(), info.Type(), info.Size())
+	code := fmt.Sprintf("%s\t%s\t%s\t%s\t%d", base, file.Prefix(), file.Key(), file.Type(), file.Size())
 	if val, err := infra.EncryptTEXT(code); err == nil {
 		return val
 	}
 	return ""
 }
 
-func decode(code string) (*filed, error) {
+func decode(code string) (*File, error) {
 	val, err := infra.DecryptTEXT(code)
 	if err != nil {
 		return nil, err
@@ -124,7 +124,7 @@ func decode(code string) (*filed, error) {
 		return nil, errInvalidCode
 	}
 
-	info := &filed{}
+	info := &File{}
 	info.code = code
 	info.base = args[0]
 	info.prefix = args[1]
@@ -168,6 +168,6 @@ func StatFile(file string) (Map, error) {
 	}, nil
 }
 
-func Decode(code string) (File, error) {
+func Decode(code string) (*File, error) {
 	return decode(code)
 }

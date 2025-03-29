@@ -17,7 +17,7 @@ func SaltConfig() string {
 	return module.config.Salt
 }
 
-func Upload(from Any, opts ...UploadOption) (string, error) {
+func Upload(from Any, opts ...UploadOption) (*File, error) {
 	path := ""
 	switch vv := from.(type) {
 	case string:
@@ -26,7 +26,7 @@ func Upload(from Any, opts ...UploadOption) (string, error) {
 		if file, ok := vv["file"].(string); ok {
 			path = file
 		} else {
-			return "", errors.New("invalid target")
+			return nil, errors.New("invalid target")
 		}
 	default:
 		path = fmt.Sprintf("%v", vv)
@@ -44,7 +44,7 @@ func Upload(from Any, opts ...UploadOption) (string, error) {
 // 	return files, err
 // }
 
-func UploadTo(base string, from Any, opts ...UploadOption) (string, error) {
+func UploadTo(base string, from Any, opts ...UploadOption) (*File, error) {
 	path := ""
 	switch vv := from.(type) {
 	case string:
@@ -53,7 +53,7 @@ func UploadTo(base string, from Any, opts ...UploadOption) (string, error) {
 		if file, ok := vv["file"].(string); ok {
 			path = file
 		} else {
-			return "", errors.New("invalid target")
+			return nil, errors.New("invalid target")
 		}
 	default:
 		path = fmt.Sprintf("%v", vv)

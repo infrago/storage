@@ -7,7 +7,7 @@ import (
 	"github.com/infrago/util"
 )
 
-func (this *Module) instance(code string) (*Instance, File, error) {
+func (this *Module) instance(code string) (*Instance, *File, error) {
 	info, err := decode(code)
 	if err != nil {
 		return nil, nil, errInvalidCode
@@ -23,14 +23,14 @@ func (this *Module) instance(code string) (*Instance, File, error) {
 	return nil, nil, errInvalidConnection
 }
 
-func (this *Module) UploadTo(base string, orginal string, opts ...UploadOption) (string, error) {
+func (this *Module) UploadTo(base string, orginal string, opts ...UploadOption) (*File, error) {
 	if base == "" {
 		base = infra.DEFAULT
 	}
 
 	inst, ok := this.instances[base]
 	if ok == false {
-		return "", errInvalidConnection
+		return nil, errInvalidConnection
 	}
 
 	opt := UploadOption{}
@@ -43,20 +43,27 @@ func (this *Module) UploadTo(base string, orginal string, opts ...UploadOption) 
 		opt.Prefix = inst.Config.Prefix
 	}
 	if opt.Mimetype == "" {
+		//minio,s3,会自动判断
 		// opt.Mimetype = infra.Mimetype(util.Extension(orginal))
 	}
 
 	return inst.connect.Upload(orginal, opt)
 }
 
-func (this *Module) Upload(orginal string, opts ...UploadOption) (string, error) {
+func (this *Module) Upload(orginal string, opts ...UploadOption) (*File, error) {
 	//这里自动分配一个存储
 	hash := util.Sha1BaseFile(orginal)
 	if hash == "" {
-		return "", errors.New("hash error 123")
+		return nil, errors.New("hash error")
 	}
 	base := this.hashring.Locate(hash)
-	return this.UploadTo(base, orginal, opts...)
+
+	file, err := this.UploadTo(base, orginal, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	return file, nil
 }
 func (this *Module) Fetch(code string, opts ...FetchOption) (Stream, error) {
 	inst, file, err := this.instance(code)

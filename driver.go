@@ -28,11 +28,11 @@ type (
 		Health() Health
 		Close() error
 
-		Upload(string, UploadOption) (string, error)
-		Fetch(File, FetchOption) (Stream, error)
-		Download(File, DownloadOption) (string, error)
+		Upload(string, UploadOption) (*File, error)
+		Fetch(*File, FetchOption) (Stream, error)
+		Download(*File, DownloadOption) (string, error)
 
-		Remove(File, RemoveOption) error
-		Browse(File, BrowseOption) (string, error)
+		Remove(*File, RemoveOption) error
+		Browse(*File, BrowseOption) (string, error)
 	}
 )

@@ -23,7 +23,7 @@ func init() {
 	infra.Register("image", Thumbnailer{
 		Alias: []string{"jpg", "jpeg", "png", "bmp", "gif", "webp"},
 		Name:  "图片处理器", Text: "图片处理器",
-		Action: func(file File, width, height, pos int64) (string, error) {
+		Action: func(file *File, width, height, pos int64) (string, error) {
 			//先获取缩略图的文件
 			_, tfile, err := thumbnailing(file, width, height, pos)
 			if err != nil {
@@ -82,7 +82,7 @@ func init() {
 }
 
 // 获取file的缩图路径信息
-func thumbnailing(file File, w, h, p int64) (string, string, error) {
+func thumbnailing(file *File, w, h, p int64) (string, string, error) {
 	//使用hash的hex hash 的前4位，生成2级目录
 	//共256*256个目录
 	// hash := util.Sha1(file.Key())
