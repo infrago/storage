@@ -3,7 +3,8 @@ package storage
 import (
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
+	"strings"
 
 	"github.com/infrago/infra"
 	. "github.com/infrago/base"
@@ -35,8 +36,17 @@ func (i *Instance) downloadTarget(file *File) (string, error) {
 		base = ""
 	}
 
-	sfile := path.Join(module.filecfg.Download, file.Base(), file.Prefix(), name)
-	spath := path.Dir(sfile)
+	root := filepath.Clean(module.filecfg.Download)
+	rel := filepath.Clean(filepath.Join(base, file.Prefix(), name))
+	if rel == "." || filepath.IsAbs(rel) || rel == ".." || strings.HasPrefix(rel, ".."+string(os.PathSeparator)) {
+		return "", errInvalidCode
+	}
+
+	sfile := filepath.Clean(filepath.Join(root, rel))
+	if sfile != root && !strings.HasPrefix(sfile, root+string(os.PathSeparator)) {
+		return "", errInvalidCode
+	}
+	spath := filepath.Dir(sfile)
 	if err := os.MkdirAll(spath, 0o755); err != nil {
 		return "", err
 	}

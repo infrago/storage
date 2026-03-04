@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
+	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/infrago/infra"
@@ -97,12 +98,10 @@ func (c *defaultConnection) Upload(original string, opt UploadOption) (*File, er
 }
 
 func (c *defaultConnection) Fetch(file *File, opt FetchOption) (Stream, error) {
-	sfile := c.objectPath(file)
-	_, err := os.Stat(sfile)
+	sfile, err := c.objectPath(file)
 	if err != nil {
 		return nil, err
 	}
-
 	f, err := os.Open(sfile)
 	if err != nil {
 		return nil, err
@@ -133,8 +132,11 @@ func (c *defaultConnection) Fetch(file *File, opt FetchOption) (Stream, error) {
 }
 
 func (c *defaultConnection) Download(file *File, opt DownloadOption) (string, error) {
-	sfile := c.objectPath(file)
-	_, err := os.Stat(sfile)
+	sfile, err := c.objectPath(file)
+	if err != nil {
+		return "", err
+	}
+	_, err = os.Stat(sfile)
 	if err != nil {
 		return "", err
 	}
@@ -142,7 +144,10 @@ func (c *defaultConnection) Download(file *File, opt DownloadOption) (string, er
 }
 
 func (c *defaultConnection) Remove(file *File, _ RemoveOption) error {
-	sfile := c.objectPath(file)
+	sfile, err := c.objectPath(file)
+	if err != nil {
+		return err
+	}
 	if err := os.Remove(sfile); err != nil && !os.IsNotExist(err) {
 		return err
 	}
@@ -150,25 +155,42 @@ func (c *defaultConnection) Remove(file *File, _ RemoveOption) error {
 }
 
 func (c *defaultConnection) Browse(file *File, _ BrowseOption) (string, error) {
-	sfile := c.objectPath(file)
-	_, err := os.Stat(sfile)
+	sfile, err := c.objectPath(file)
+	if err != nil {
+		return "", err
+	}
+	_, err = os.Stat(sfile)
 	if err != nil {
 		return "", err
 	}
 	return sfile, nil
 }
 
-func (c *defaultConnection) objectPath(file *File) string {
+func (c *defaultConnection) objectPath(file *File) (string, error) {
 	name := file.Key()
 	if file.Type() != "" {
 		name = fmt.Sprintf("%s.%s", file.Key(), file.Type())
 	}
-	return path.Join(c.setting.Storage, file.Prefix(), name)
+
+	root := filepath.Clean(c.setting.Storage)
+	rel := filepath.Clean(filepath.Join(file.Prefix(), name))
+	if rel == "." || filepath.IsAbs(rel) || rel == ".." || strings.HasPrefix(rel, ".."+string(os.PathSeparator)) {
+		return "", errInvalidCode
+	}
+
+	full := filepath.Clean(filepath.Join(root, rel))
+	if full != root && !strings.HasPrefix(full, root+string(os.PathSeparator)) {
+		return "", errInvalidCode
+	}
+	return full, nil
 }
 
 func (c *defaultConnection) ensurePath(file *File) (string, string, error) {
-	sfile := c.objectPath(file)
-	spath := path.Dir(sfile)
+	sfile, err := c.objectPath(file)
+	if err != nil {
+		return "", "", err
+	}
+	spath := filepath.Dir(sfile)
 	if err := os.MkdirAll(spath, 0o755); err != nil {
 		return "", "", err
 	}
