@@ -12,6 +12,7 @@
 - 对上提供统一模块接口
 - 对下通过驱动接口接入具体后端
 - 支持按配置切换驱动实现
+- 支持按文件类型注册缩略图/预览处理器
 
 ## 快速接入
 
@@ -22,6 +23,19 @@ import _ "github.com/infrago/storage"
 ```toml
 [storage]
 driver = "default"
+```
+
+```go
+import "github.com/infrago/storage"
+import "github.com/infrago/infra"
+
+storage.Thumbnail(code, 320, 0, 0)
+
+infra.Register("svg", storage.Thumbnailer{
+	Action: func(file *storage.File, width, height, position int64) (string, error) {
+		return "", nil
+	},
+})
 ```
 
 ## 驱动实现接口列表

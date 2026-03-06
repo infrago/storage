@@ -2,10 +2,11 @@ package storage
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 
-	"github.com/infrago/infra"
 	. "github.com/infrago/base"
+	"github.com/infrago/infra"
 	"github.com/infrago/util"
 )
 
@@ -20,9 +21,11 @@ var module = &Module{
 		Preview:   "store/preview",
 		Salt:      infra.INFRAGO,
 	},
-	configs:   make(Configs, 0),
-	drivers:   make(map[string]Driver, 0),
-	instances: make(map[string]*Instance, 0),
+	configs:      make(Configs, 0),
+	drivers:      make(map[string]Driver, 0),
+	thumbnailers: make(map[string]Thumbnailer, 0),
+	previewers:   make(map[string]Previewer, 0),
+	instances:    make(map[string]*Instance, 0),
 }
 
 type (
@@ -36,6 +39,9 @@ type (
 		filecfg fileConfig
 		configs Configs
 		drivers map[string]Driver
+
+		thumbnailers map[string]Thumbnailer
+		previewers   map[string]Previewer
 
 		instances map[string]*Instance
 		weights   map[string]int
@@ -68,6 +74,10 @@ func (m *Module) Register(name string, value Any) {
 		m.RegisterConfig(name, v)
 	case Configs:
 		m.RegisterConfigs(v)
+	case Thumbnailer:
+		m.Thumbnailer(name, v)
+	case Previewer:
+		m.Previewer(name, v)
 	}
 }
 
@@ -108,6 +118,63 @@ func (m *Module) RegisterConfigs(configs Configs) {
 	for k, v := range configs {
 		m.RegisterConfig(k, v)
 	}
+}
+
+func (m *Module) Thumbnailer(name string, config Thumbnailer) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+	m.registerThumbnailer(name, config)
+}
+
+func (m *Module) registerThumbnailer(name string, config Thumbnailer) {
+	for _, key := range normalizedAliases(name, config.Alias) {
+		if infra.Override() {
+			m.thumbnailers[key] = config
+			continue
+		}
+		if _, ok := m.thumbnailers[key]; !ok {
+			m.thumbnailers[key] = config
+		}
+	}
+}
+
+func (m *Module) Previewer(name string, config Previewer) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+	m.registerPreviewer(name, config)
+}
+
+func (m *Module) registerPreviewer(name string, config Previewer) {
+	for _, key := range normalizedAliases(name, config.Alias) {
+		if infra.Override() {
+			m.previewers[key] = config
+			continue
+		}
+		if _, ok := m.previewers[key]; !ok {
+			m.previewers[key] = config
+		}
+	}
+}
+
+func normalizedAliases(name string, aliases []string) []string {
+	keys := make([]string, 0, len(aliases)+1)
+	seen := make(map[string]struct{}, len(aliases)+1)
+	appendKey := func(v string) {
+		v = strings.ToLower(strings.TrimSpace(v))
+		if v == "" {
+			return
+		}
+		if _, ok := seen[v]; ok {
+			return
+		}
+		seen[v] = struct{}{}
+		keys = append(keys, v)
+	}
+	appendKey(name)
+	for _, alias := range aliases {
+		appendKey(alias)
+	}
+	return keys
 }
 
 func (m *Module) Config(global Map) {

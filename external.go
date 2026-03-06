@@ -60,3 +60,11 @@ func Browse(code string, opts ...BrowseOption) (string, error) {
 func ThumbnailConfig() string { return module.filecfg.Thumbnail }
 func PreviewConfig() string   { return module.filecfg.Preview }
 func SaltConfig() string      { return module.filecfg.Salt }
+
+func Thumbnail(code string, width, height, pos int64) (string, error) {
+	return module.Thumbnail(code, width, height, pos)
+}
+
+func Preview(code string, width, height int64) (string, error) {
+	return module.Preview(code, width, height, 0)
+}

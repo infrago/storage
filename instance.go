@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/infrago/infra"
 	. "github.com/infrago/base"
+	"github.com/infrago/infra"
 )
 
 type (
@@ -30,25 +30,50 @@ func (i *Instance) downloadTarget(file *File) (string, error) {
 	if file.Type() != "" {
 		name = fmt.Sprintf("%s.%s", file.Key(), file.Type())
 	}
+	return i.prepareCacheTarget(module.filecfg.Download, filePathParts(file, name)...)
+}
 
-	base := file.Base()
-	if base == infra.DEFAULT {
-		base = ""
+func (i *Instance) thumbnailTarget(file *File, name string) (string, error) {
+	return i.prepareCacheTarget(module.filecfg.Thumbnail, thumbnailPathParts(file, name)...)
+}
+
+func (i *Instance) prepareCacheTarget(root string, parts ...string) (string, error) {
+	target, err := cacheTarget(root, parts...)
+	if err != nil {
+		return "", err
 	}
+	if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
+		return "", err
+	}
+	return target, nil
+}
 
-	root := filepath.Clean(module.filecfg.Download)
-	rel := filepath.Clean(filepath.Join(base, file.Prefix(), name))
+func cacheTarget(root string, parts ...string) (string, error) {
+	root = filepath.Clean(root)
+	rel := filepath.Clean(filepath.Join(parts...))
 	if rel == "." || filepath.IsAbs(rel) || rel == ".." || strings.HasPrefix(rel, ".."+string(os.PathSeparator)) {
 		return "", errInvalidCode
 	}
 
-	sfile := filepath.Clean(filepath.Join(root, rel))
-	if sfile != root && !strings.HasPrefix(sfile, root+string(os.PathSeparator)) {
+	target := filepath.Clean(filepath.Join(root, rel))
+	if target != root && !strings.HasPrefix(target, root+string(os.PathSeparator)) {
 		return "", errInvalidCode
 	}
-	spath := filepath.Dir(sfile)
-	if err := os.MkdirAll(spath, 0o755); err != nil {
-		return "", err
+	return target, nil
+}
+
+func filePathParts(file *File, name string) []string {
+	base := file.Base()
+	if base == infra.DEFAULT {
+		base = ""
 	}
-	return sfile, nil
+	return []string{base, file.Prefix(), name}
+}
+
+func thumbnailPathParts(file *File, name string) []string {
+	base := file.Base()
+	if base == infra.DEFAULT {
+		base = ""
+	}
+	return []string{base, file.Prefix(), file.Key(), name}
 }
