@@ -59,7 +59,17 @@ func (c *defaultConnection) Upload(original string, opt UploadOption) (*File, er
 		return nil, errors.New("directory upload not supported")
 	}
 
-	ext := infra.Extension(original)
+	ext := ""
+	if opt.Mimetype != "" {
+		ext = infra.Extension(opt.Mimetype)
+	}
+	if ext == "" {
+		ext = strings.TrimPrefix(strings.ToLower(filepath.Ext(original)), ".")
+	}
+	if ext == "" {
+		// 兼容历史行为：若传入本身是 MIME，再做一次映射。
+		ext = infra.Extension(original)
+	}
 	if opt.Key == "" {
 		h, hex, err := hashFile(original)
 		if err != nil {
@@ -119,13 +129,15 @@ func (c *defaultConnection) Fetch(file *File, opt FetchOption) (Stream, error) {
 		if start < 0 {
 			start = 0
 		}
-		if end <= 0 || end > size {
-			end = size
+		// `end` is inclusive HTTP range endpoint.
+		if end <= 0 || end >= size {
+			end = size - 1
 		}
 		if end < start {
 			end = start
 		}
-		return &rangeFileReader{file: f, reader: io.NewSectionReader(f, start, end-start)}, nil
+		length := end - start + 1
+		return &rangeFileReader{file: f, reader: io.NewSectionReader(f, start, length)}, nil
 	}
 
 	return f, nil
