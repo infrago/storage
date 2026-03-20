@@ -4,9 +4,9 @@ go 1.25.3
 
 require (
 	github.com/disintegration/imaging v1.6.2
-	github.com/infrago/base v0.16.0
-	github.com/infrago/infra v0.16.0
-	github.com/infrago/util v0.16.0
+	github.com/infrago/base v0.17.0
+	github.com/infrago/infra v0.17.0
+	github.com/infrago/util v0.17.0
 	golang.org/x/image v0.25.0
 	golang.org/x/sync v0.16.0
 )
